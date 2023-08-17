@@ -6,33 +6,24 @@ FROM --platform=$BUILDPLATFORM golang:1.18-alpine as build
 RUN apk upgrade --no-cache --force
 RUN apk add --update build-base make git
 
-WORKDIR /go/src/github.com/webdevops/alertmanager2es
-
-# Dependencies
-COPY go.mod go.sum .
-RUN go mod download
+WORKDIR /app
 
 # Compile
 COPY . .
-RUN make test
+RUN make
 ARG TARGETOS TARGETARCH
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} make build
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} make 
 
-#############################################
-# Test
-#############################################
-FROM gcr.io/distroless/static as test
-USER 0:0
-WORKDIR /app
-COPY --from=build /go/src/github.com/webdevops/alertmanager2es/alertmanager2es .
-RUN ["./alertmanager2es", "-help"]
+
 
 #############################################
 # Final
 #############################################
-FROM gcr.io/distroless/static
+FROM golang:1.18-alpine 
 ENV LOG_JSON=1
-WORKDIR /
-COPY --from=test /app .
+WORKDIR /app 
+COPY --from=build /app/alertmanager2es .
 USER 1000:1000
-ENTRYPOINT ["/alertmanager2es"]
+
+
+ENTRYPOINT ["/app/alertmanager2es"]
