@@ -25,7 +25,7 @@ FROM gcr.io/distroless/static as test
 USER 0:0
 WORKDIR /app
 COPY --from=build /go/src/github.com/webdevops/alertmanager2es/alertmanager2es .
-RUN ["./alertmanager2es", "--help"]
+RUN ["./alertmanager2es", "-help"]
 
 #############################################
 # Final
